@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AGE Capital Structure</title>
+  <meta name="description" content="Capital structure calculator for the AGE case: Campus Deli and Sub Shop, plus the Firm U and Firm L example.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1>AGE Capital Structure</h1>
+      <p class="tagline">Campus Deli and Sub Shop (CDSS) and the Firm U / Firm L example · FIN 4150</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div id="status" class="status" role="status">Reading the data files…</div>
+
+    <section id="firms" class="card" hidden>
+      <h2>Question c: Firm U and Firm L</h2>
+      <p id="firms-intro" class="note"></p>
+      <div id="firm-tables" class="firm-tables"></div>
+      <p class="note">ROE uses book equity (assets − debt). Expected value is the probability-weighted average; σ is the square root of the probability-weighted squared deviations; CV = σ / expected value. Firm U pays no interest, so its TIE is shown as n/a.</p>
+    </section>
+
+    <section id="cdss" class="card" hidden>
+      <h2>Question d: CDSS at each amount of borrowing</h2>
+      <div id="cdss-warnings"></div>
+      <dl id="cdss-inputs" class="inputs"></dl>
+
+      <h3>Earnings at each amount of borrowing</h3>
+      <p class="note">Interest, taxes and net income don't depend on the price CDSS pays for the shares it buys back, so they are the same under both methods.</p>
+      <div id="cdss-earnings"></div>
+
+      <h3 id="case-heading">Case method (questions d(3) and d(4))</h3>
+      <p id="case-note" class="note"></p>
+      <div id="cdss-case"></div>
+      <p id="case-check" class="check"></p>
+
+      <h3>New-price method: buy back at the price after the announcement</h3>
+      <p id="new-note" class="note"></p>
+      <div id="cdss-new"></div>
+      <p id="new-check" class="check"></p>
+
+      <h3>Which amount of debt?</h3>
+      <div id="cdss-summary" class="summary"></div>
+    </section>
+  </main>
+
+  <footer class="wrap site-footer">
+    <p>Every figure is worked out in your browser from the CSV files in <code>data/</code>. The app sends nothing anywhere.</p>
+  </footer>
+
+  <script src="capstruct.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
