@@ -1,0 +1,268 @@
+/* AGE Capital Structure: plain CSS, no web fonts or external files. */
+
+:root {
+  --bg: #f6f7f9;
+  --card: #ffffff;
+  --text: #1c2430;
+  --muted: #5b6575;
+  --line: #d9dee6;
+  --head: #eef1f5;
+  --accent: #b5121b;          /* Utah Tech red */
+  --ok: #17663a;
+  --ok-bg: #e8f5ec;
+  --bad: #8a4b00;
+  --bad-bg: #fff4e0;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #12161c;
+    --card: #1b2028;
+    --text: #e6e9ee;
+    --muted: #a3acba;
+    --line: #333b47;
+    --head: #232a34;
+    --accent: #ff6b6b;
+    --ok: #7ad69b;
+    --ok-bg: #16301f;
+    --bad: #ffc266;
+    --bad-bg: #33260f;
+    color-scheme: dark;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  overflow-wrap: break-word;
+}
+
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.site-header {
+  background: var(--card);
+  border-bottom: 3px solid var(--accent);
+  padding: 16px 0 12px;
+  margin-bottom: 16px;
+}
+.site-header h1 { margin: 0; font-size: 1.5rem; line-height: 1.2; }
+.tagline { margin: 4px 0 0; color: var(--muted); font-size: 0.95rem; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+h2 { margin: 0 0 8px; font-size: 1.25rem; }
+h3 { margin: 24px 0 6px; font-size: 1.05rem; }
+
+.note { color: var(--muted); font-size: 0.9rem; margin: 4px 0 10px; }
+
+.status {
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  margin-bottom: 16px;
+}
+.status.error, .warning {
+  background: var(--bad-bg);
+  color: var(--bad);
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.check { font-size: 0.9rem; margin: 8px 0 0; padding: 8px 12px; border-radius: 8px; }
+.check.ok { background: var(--ok-bg); color: var(--ok); }
+.check.bad { background: var(--bad-bg); color: var(--bad); }
+
+code { font-size: 0.9em; }
+
+/* What the app read from the data files */
+.inputs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 16px;
+  margin: 8px 0 0;
+  padding: 10px 12px;
+  background: var(--head);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  max-width: 640px;
+}
+.inputs dt { color: var(--muted); }
+.inputs dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Tables */
+table.data {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+table.data caption {
+  text-align: left;
+  font-weight: 700;
+  padding: 0 0 6px;
+}
+table.data th, table.data td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: right;
+  vertical-align: bottom;
+}
+table.data thead th {
+  background: var(--head);
+  font-weight: 600;
+  line-height: 1.25;
+}
+table.data tbody th { text-align: left; font-weight: 600; white-space: nowrap; }
+table.data thead th:first-child { text-align: left; }
+.sub {
+  display: block;
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+/* Firm U and Firm L sit side by side when there's room */
+.firm-tables {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px 24px;
+}
+table.firm tr.stat td { text-align: center; }
+table.firm tr.stat th, table.firm tr.stat td { background: var(--head); }
+
+/* On a phone, each row of a debt table becomes a card */
+@media (max-width: 760px) {
+  table.stack thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  table.stack, table.stack tbody, table.stack tr,
+  table.stack th, table.stack td { display: block; width: 100%; }
+  table.stack tr {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    padding: 4px 12px;
+  }
+  table.stack tbody th {
+    font-size: 1rem;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+  }
+  table.stack tbody th::before { content: attr(data-label) " "; color: var(--muted); font-weight: 400; }
+  table.stack td {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 0;
+    border: 0;
+  }
+  table.stack td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    text-align: left;
+  }
+}
+
+@media (max-width: 420px) {
+  .card { padding: 12px; }
+  table.firm { font-size: 0.8rem; }
+  table.firm th, table.firm td { padding: 5px 4px; }
+}
+
+/* Levers: sliders and buttons */
+.lever {
+  margin: 16px 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+}
+.lever label { display: block; font-weight: 600; }
+.lever output { font-variant-numeric: tabular-nums; color: var(--accent); }
+.lever input[type="range"] { width: 100%; margin: 10px 0 2px; accent-color: var(--accent); }
+.lever .note { margin: 2px 0 8px; }
+.buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.buttons button {
+  font: inherit;
+  font-weight: 600;
+  padding: 8px 16px;
+  min-height: 44px;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: var(--card);
+  color: var(--accent);
+  cursor: pointer;
+}
+.buttons button:hover, .buttons button:focus-visible { background: var(--accent); color: var(--card); }
+.button-note {
+  font-size: 0.9rem;
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--head);
+}
+.at-debt { font-size: 0.9rem; margin: 12px 0 8px; font-variant-numeric: tabular-nums; }
+
+.methods {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+}
+.method {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: var(--card);
+}
+.method h4 { margin: 0; font-size: 1rem; }
+.method .sub { margin: 0 0 6px; }
+.method dl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+  margin: 0;
+  font-size: 0.9rem;
+}
+.method dt { color: var(--muted); }
+.method dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.method dt:first-of-type, .method dt:first-of-type + dd { font-weight: 700; color: var(--text); }
+.method .check, .method .warning { margin: 8px 0 0; font-size: 0.85rem; }
+
+/* The row for the slider's amount of debt */
+table.data tr.selected th, table.data tr.selected td { background: var(--ok-bg); }
+@media (max-width: 760px) {
+  table.stack tr.selected { border: 2px solid var(--accent); }
+  table.stack tr.selected th, table.stack tr.selected td { background: transparent; }
+}
+
+.summary ul { margin: 0; padding-left: 1.2em; }
+.summary li { margin: 2px 0; }
+
+.site-footer { color: var(--muted); font-size: 0.85rem; padding-bottom: 24px; }
