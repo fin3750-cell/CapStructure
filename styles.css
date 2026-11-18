@@ -196,6 +196,72 @@ table.firm tr.stat th, table.firm tr.stat td { background: var(--head); }
   table.firm th, table.firm td { padding: 5px 4px; }
 }
 
+/* Levers: sliders and buttons */
+.lever {
+  margin: 16px 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+}
+.lever label { display: block; font-weight: 600; }
+.lever output { font-variant-numeric: tabular-nums; color: var(--accent); }
+.lever input[type="range"] { width: 100%; margin: 10px 0 2px; accent-color: var(--accent); }
+.lever .note { margin: 2px 0 8px; }
+.buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.buttons button {
+  font: inherit;
+  font-weight: 600;
+  padding: 8px 16px;
+  min-height: 44px;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: var(--card);
+  color: var(--accent);
+  cursor: pointer;
+}
+.buttons button:hover, .buttons button:focus-visible { background: var(--accent); color: var(--card); }
+.button-note {
+  font-size: 0.9rem;
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--head);
+}
+.at-debt { font-size: 0.9rem; margin: 12px 0 8px; font-variant-numeric: tabular-nums; }
+
+.methods {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+}
+.method {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: var(--card);
+}
+.method h4 { margin: 0; font-size: 1rem; }
+.method .sub { margin: 0 0 6px; }
+.method dl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 12px;
+  margin: 0;
+  font-size: 0.9rem;
+}
+.method dt { color: var(--muted); }
+.method dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.method dt:first-of-type, .method dt:first-of-type + dd { font-weight: 700; color: var(--text); }
+.method .check, .method .warning { margin: 8px 0 0; font-size: 0.85rem; }
+
+/* The row for the slider's amount of debt */
+table.data tr.selected th, table.data tr.selected td { background: var(--ok-bg); }
+@media (max-width: 760px) {
+  table.stack tr.selected { border: 2px solid var(--accent); }
+  table.stack tr.selected th, table.stack tr.selected td { background: transparent; }
+}
+
 .summary ul { margin: 0; padding-left: 1.2em; }
 .summary li { margin: 2px 0; }
 

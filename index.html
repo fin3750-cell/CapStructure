@@ -21,6 +21,15 @@
     <section id="firms" class="card" hidden>
       <h2>Question c: Firm U and Firm L</h2>
       <p id="firms-intro" class="note"></p>
+      <div class="lever">
+        <label for="firm-l-debt">Firm L's debt: <output id="firm-l-debt-out" for="firm-l-debt"></output></label>
+        <input type="range" id="firm-l-debt" min="0">
+        <div class="buttons">
+          <button type="button" id="btn-case">Case</button>
+        </div>
+        <p id="firm-l-rate-note" class="note"></p>
+        <div id="firm-l-warnings"></div>
+      </div>
       <div id="firm-tables" class="firm-tables"></div>
       <p class="note">ROE uses book equity (assets − debt). Expected value is the probability-weighted average; σ is the square root of the probability-weighted squared deviations; CV = σ / expected value. Firm U pays no interest, so its TIE is shown as n/a.</p>
     </section>
@@ -30,8 +39,21 @@
       <div id="cdss-warnings"></div>
       <dl id="cdss-inputs" class="inputs"></dl>
 
+      <div class="lever">
+        <label for="cdss-debt">CDSS's debt: <output id="cdss-debt-out" for="cdss-debt"></output></label>
+        <input type="range" id="cdss-debt" min="0" step="1">
+        <p class="note">The slider stops only at the banker's amounts.</p>
+        <div class="buttons">
+          <button type="button" id="btn-best-price">Best price</button>
+          <button type="button" id="btn-high-eps">Highest EPS</button>
+        </div>
+        <p id="cdss-button-note" class="button-note" role="status" hidden></p>
+        <p id="cdss-at-debt" class="at-debt"></p>
+        <div id="cdss-methods" class="methods"></div>
+      </div>
+
       <h3>Earnings at each amount of borrowing</h3>
-      <p class="note">Interest, taxes and net income don't depend on the price CDSS pays for the shares it buys back, so they are the same under both methods.</p>
+      <p class="note">Interest, taxes and net income don't depend on the price CDSS pays for the shares it buys back, so they are the same under all three methods.</p>
       <div id="cdss-earnings"></div>
 
       <h3 id="case-heading">Case method (questions d(3) and d(4))</h3>
@@ -43,6 +65,11 @@
       <p id="new-note" class="note"></p>
       <div id="cdss-new"></div>
       <p id="new-check" class="check"></p>
+
+      <h3>Tax-shield method: buy back at today's price plus the tax shields per share</h3>
+      <p id="ts-note" class="note"></p>
+      <div id="cdss-ts"></div>
+      <p id="ts-check" class="check"></p>
 
       <h3>Which amount of debt?</h3>
       <div id="cdss-summary" class="summary"></div>

@@ -115,6 +115,8 @@
     const v = readNamedValues(rows, file, 'item', [
       'total_assets', 'firm_l_debt', 'interest_rate', 'slider_max', 'slider_step'
     ]);
+    if (v.slider_step <= 0) throw new Error(`${file}: slider_step must be above 0.`);
+    if (v.slider_max < 0) throw new Error(`${file}: slider_max must be 0 or more.`);
     return {
       totalAssets: v.total_assets,
       firmLDebt: v.firm_l_debt,
@@ -222,8 +224,20 @@
     return Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b));
   }
 
-  // One amount of borrowing, both buyback methods.
-  function cdssAtDebt(cdss, tax, ebit, step) {
+  // Management's share after the buyback. Management doesn't sell, so only
+  // outside investors' shares, (1 − management's share) × n, can be bought.
+  function managementStake(cdss, repurchased, remaining) {
+    const n = cdss.shares;
+    const m = cdss.managementShare;
+    const outside = (1 - m) * n;
+    if (close(repurchased, outside)) return { status: 'none-left', stake: 1, outside };
+    if (repurchased > outside) return { status: 'must-sell', stake: null, outside };
+    return { status: 'ok', stake: m * n / remaining, outside };
+  }
+
+  // One amount of borrowing, all three buyback methods. rU is the cost of
+  // equity at $0 (the unlevered cost), or null if the schedule has no $0 row.
+  function cdssAtDebt(cdss, tax, ebit, step, rU) {
     const D = step.debt;
     const rd = step.rd;            // null at $0
     const rs = step.rs;
@@ -255,6 +269,28 @@
     const newEps = newRemaining > 0 ? netIncome / newRemaining : null;
     const waccMarket = (D / V) * afterTaxRd + (S / V) * rs;
 
+    // Tax-shield method (MM with corporate taxes, perpetual debt): the
+    // announcement adds the present value of the tax shields, T × D, to
+    // today's value of the firm, n × P0. CDSS buys back at that price.
+    // It uses the banker's r_d for interest but not the banker's r_s.
+    const pvTaxShield = tax * D;
+    const tsFirmValue = n * P0 + pvTaxShield;
+    const tsPrice = tsFirmValue / n;               // = P0 + T × D / n
+    const tsRepurchased = D / tsPrice;
+    const tsRemaining = n - tsRepurchased;
+    const tsEps = tsRemaining > 0 ? netIncome / tsRemaining : null;
+    const tsEquityValue = tsFirmValue - D;
+    // With g = 0 and all earnings paid out, price = EPS / r_s, so the r_s
+    // this price implies is EPS / P.
+    const tsImpliedRs = tsEps !== null ? tsEps / tsPrice : null;
+    const tsWacc = tsImpliedRs !== null
+      ? (D / tsFirmValue) * afterTaxRd + (tsEquityValue / tsFirmValue) * tsImpliedRs
+      : null;
+    // MM Proposition II with taxes: r_s = r_U + (r_U − r_d)(1 − T) D / S.
+    const tsMmRs = rU !== null && tsEquityValue > 0
+      ? rU + (rU - (D > 0 ? rd : 0)) * (1 - tax) * D / tsEquityValue
+      : null;
+
     return {
       debt: D, rd, rs, interest, ebt, taxes, netIncome, tie,
       caseMethod: {
@@ -263,7 +299,26 @@
         eps: caseEps,
         dps: caseEps,                    // all earnings paid out
         price: casePrice,
-        wacc: waccBook
+        wacc: waccBook,
+        management: managementStake(cdss, caseRepurchased, caseRemaining)
+      },
+      taxShield: {
+        pvTaxShield,
+        firmValue: tsFirmValue,
+        equityValue: tsEquityValue,
+        price: tsPrice,
+        repurchased: tsRepurchased,
+        remaining: tsRemaining,
+        eps: tsEps,
+        dps: tsEps,
+        impliedRs: tsImpliedRs,
+        wacc: tsWacc,
+        management: managementStake(cdss, tsRepurchased, tsRemaining),
+        // Checks: WACC = EBIT(1 − T) / V, and the implied r_s = MM Prop. II.
+        waccCheck: ebit * (1 - tax) / tsFirmValue,
+        waccCheckOk: tsWacc !== null && close(tsWacc, ebit * (1 - tax) / tsFirmValue),
+        mmRs: tsMmRs,
+        mmCheckOk: tsMmRs !== null && tsImpliedRs !== null && close(tsImpliedRs, tsMmRs)
       },
       newPrice: {
         equityValue: S,
@@ -278,7 +333,8 @@
         epsCheck: rs * P,
         waccCheck: ebit * (1 - tax) / V,
         epsCheckOk: newEps !== null && close(newEps, rs * P),
-        waccCheckOk: close(waccMarket, ebit * (1 - tax) / V)
+        waccCheckOk: close(waccMarket, ebit * (1 - tax) / V),
+        management: managementStake(cdss, newRepurchased, newRemaining)
       }
     };
   }
@@ -296,7 +352,9 @@
 
   function analyzeCdss(cdss, schedule, tax) {
     const ebit = cdssEbit(cdss);
-    const rows = schedule.map(step => cdssAtDebt(cdss, tax, ebit, step));
+    const zeroStep = schedule.find(s => s.debt === 0);
+    const rU = zeroStep ? zeroStep.rs : null;
+    const rows = schedule.map(step => cdssAtDebt(cdss, tax, ebit, step, rU));
     const warnings = [];
 
     if (cdss.currentDebt !== 0) {
@@ -338,14 +396,23 @@
       waccBook: bestIndex(rows.map(r => r.caseMethod.wacc), 'min'),
       waccMarket: bestIndex(rows.map(r => r.newPrice.wacc), 'min'),
       caseEps: bestIndex(rows.map(r => r.caseMethod.eps), 'max'),
-      newEps: bestIndex(rows.map(r => r.newPrice.eps), 'max')
+      newEps: bestIndex(rows.map(r => r.newPrice.eps), 'max'),
+      taxPrice: bestIndex(rows.map(r => r.taxShield.price), 'max'),
+      taxEps: bestIndex(rows.map(r => r.taxShield.eps), 'max'),
+      taxWacc: bestIndex(rows.map(r => r.taxShield.wacc), 'min')
     };
 
     const checks = {
       epsAll: rows.every(r => r.newPrice.epsCheckOk),
       waccAll: rows.every(r => r.newPrice.waccCheckOk),
       epsFailed: rows.filter(r => !r.newPrice.epsCheckOk).map(r => r.debt),
-      waccFailed: rows.filter(r => !r.newPrice.waccCheckOk).map(r => r.debt)
+      waccFailed: rows.filter(r => !r.newPrice.waccCheckOk).map(r => r.debt),
+      tsWaccAll: rows.every(r => r.taxShield.waccCheckOk),
+      tsWaccFailed: rows.filter(r => !r.taxShield.waccCheckOk).map(r => r.debt),
+      // MM Prop. II matches only if today's value n × P0 equals the
+      // unlevered value EBIT(1 − T) / r_U, which is the $0 check.
+      tsMmAll: rows.every(r => r.taxShield.mmCheckOk),
+      tsMmFailed: rows.filter(r => !r.taxShield.mmCheckOk).map(r => r.debt)
     };
 
     return { ebit, tax, cdss, rows, best, zeroCheck, checks, warnings };
@@ -415,7 +482,7 @@
     parseCSV, toNumber,
     readCdss, readTaxRate, readExampleFirms, readSchedule, readScenarios,
     weightedStats, firmAnalysis,
-    cdssEbit, cdssAtDebt, analyzeCdss, bestIndex,
+    cdssEbit, cdssAtDebt, analyzeCdss, bestIndex, managementStake,
     roundHalfUp, formatNumber,
     fmtDollars, fmtCost, fmtMoney, fmtPct, fmtMultiple, fmtRatio, fmtShares
   };
